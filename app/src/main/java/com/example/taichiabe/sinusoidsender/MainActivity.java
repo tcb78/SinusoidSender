@@ -7,11 +7,9 @@ import java.util.List;
 
 import android.app.Activity;
 import android.content.Context;
-import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.EditText;
@@ -20,25 +18,16 @@ import android.widget.TextView;
 
 public class MainActivity extends Activity implements OnCheckedChangeListener {
 
-    //音を何秒鳴らすか
-    public static final double WHOLE_NOTE = 1.0;
+    public static int DEFAULT_VOLUME = 0;
 
-    //信号音の周波数
-    public static final double SIGNAL = 20000;
-    public static final double START = 1000;
-
-    int SENDFREQ;
-    int VOLUME;
-    int AMPLITUDE;
-    int SendSR = 44100;
-    int SendBufSize = 44100;
-    int musicVolume = 0;
+    public static final int SAMPLING_RATE = 44100;
+    public static final int BUFFER_SIZE = 44100;
 
     AudioManager audioManager;
     AudioTrack audioTrack = null;
-    private List<SoundDto> soundList = new ArrayList<SoundDto>();
+    private List<SoundDto> soundList = new ArrayList<>();
     Thread send;
-    boolean bIsPlaying = false;
+    boolean isPlaying = false;
 
     // Sound生成クラス
     DigitalSoundGenerator soundGenerator;
@@ -48,42 +37,14 @@ public class MainActivity extends Activity implements OnCheckedChangeListener {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        TextView SendfreqText = findViewById(R.id.SendfreqText);
-        SendfreqText.setText(R.string.SendfreqText);
+        TextView sendingFreqText = findViewById(R.id.sendingFreqText);
+        sendingFreqText.setText(R.string.sendingFreqText);
         TextView volumeText = findViewById(R.id.volumeText);
         volumeText.setText(R.string.volumeText);
         TextView amplitudeText = findViewById(R.id.amplitudeText);
         amplitudeText.setText(R.string.amplitudeText);
-        Switch switch1 = findViewById(R.id.Switch);
-        switch1.setOnCheckedChangeListener(this);
-
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-
-        if(audioTrack.getPlayState() == AudioTrack.PLAYSTATE_PLAYING) {
-            audioTrack.stop();
-            bIsPlaying = false;
-        }
-        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, musicVolume, 0);
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-
-        if(audioTrack.getPlayState() == AudioTrack.PLAYSTATE_PLAYING) {
-            audioTrack.stop();
-            audioTrack.release();
-            bIsPlaying = false;
-        }
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
+        Switch sendingSwitch = findViewById(R.id.Switch);
+        sendingSwitch.setOnCheckedChangeListener(this);
     }
 
     @Override
@@ -91,40 +52,36 @@ public class MainActivity extends Activity implements OnCheckedChangeListener {
 
         if(isChecked) {
 
-            EditText SendfreqEdit = findViewById(R.id.SendfreqEdit);
+            EditText sendingFreqEdit = findViewById(R.id.sendingFreqEdit);
             EditText volumeEdit = findViewById(R.id.volumeEdit);
             EditText amplitudeEdit = findViewById(R.id.amplitudeEdit);
 
-            SENDFREQ = Integer.parseInt(SendfreqEdit.getText().toString());
-            VOLUME = Integer.parseInt(volumeEdit.getText().toString());
-            AMPLITUDE = Integer.parseInt(amplitudeEdit.getText().toString());
-
-            //SendSR = 4 * SENDFREQ;
-            //SendBufSize = 4 * SENDFREQ;
+            final int SENDING_FREQ = Integer.parseInt(sendingFreqEdit.getText().toString());
+            final int SENDING_VOLUME = Integer.parseInt(volumeEdit.getText().toString());
+            final int AMPLITUDE = Integer.parseInt(amplitudeEdit.getText().toString());
 
             audioManager = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
 
             // SoundGeneratorクラスをサンプルレート44100で作成
-            soundGenerator = new DigitalSoundGenerator(44100, 44100);
+            soundGenerator = new DigitalSoundGenerator(SAMPLING_RATE, BUFFER_SIZE);
 
             // 再生用AudioTrackは、同じサンプルレートで初期化したものを利用する
             audioTrack = soundGenerator.getAudioTrack();
 
-            soundList.add(new SoundDto(generateSound(soundGenerator, SENDFREQ, AMPLITUDE), WHOLE_NOTE));
+            soundList.add(new SoundDto(generateSound(soundGenerator, SENDING_FREQ, AMPLITUDE)));
 
-            musicVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
-            audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, VOLUME, 0);
+            DEFAULT_VOLUME = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+            audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, SENDING_VOLUME, 0);
 
             audioTrack.play();
-            bIsPlaying = true;
+            isPlaying = true;
             send = new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    while(bIsPlaying) {
+                    while(isPlaying) {
                         for(SoundDto sound : soundList) {
                             audioTrack.write(sound.getSound(), 0, sound.getSound().length);
                         }
-                        Log.d("audioTrack","audioTrack");
                     }
                     audioTrack.stop();
                     audioTrack.release();
@@ -137,14 +94,41 @@ public class MainActivity extends Activity implements OnCheckedChangeListener {
             if(audioTrack.getPlayState() == AudioTrack.PLAYSTATE_PLAYING) {
                 //audioTrack.stop();
                 //audioTrack.release();
-                bIsPlaying = false;
+                isPlaying = false;
             }
             soundList.clear();
-            audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, musicVolume, 0);
-
+            audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, DEFAULT_VOLUME, 0);
         }
-
     }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        if(audioTrack.getPlayState() == AudioTrack.PLAYSTATE_PLAYING) {
+            audioTrack.stop();
+            isPlaying = false;
+        }
+        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, DEFAULT_VOLUME, 0);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        if(audioTrack.getPlayState() == AudioTrack.PLAYSTATE_PLAYING) {
+            audioTrack.stop();
+            audioTrack.release();
+            isPlaying = false;
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
+
+
 
     /**
      * ８ビットのピコピコ音を生成する.

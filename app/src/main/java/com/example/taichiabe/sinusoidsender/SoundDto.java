@@ -9,12 +9,16 @@ public class SoundDto {
 
     /**
      * 引数付きコンストラクタ
-     * @param source
-     * @param length
+     * @param source 音声データ
+     * @param length 長さ
      */
     public SoundDto(byte[] source, double length) {
         this.sound = source;
         this.length = length;
+    }
+
+    public SoundDto(byte[] source) {
+        this.sound = source;
     }
 
     public byte[] getSound() {
