@@ -36,7 +36,7 @@ public class DigitalSoundGenerator {
      * @param frequency 鳴らしたい音の周波数
      * @return 音声データ
      */
-    public byte[] getSound(double frequency, double amplitude) {
+    public byte[] getSound(double frequency) {
         frequency = frequency / 2;
         // byteバッファを作成
         byte[] buffer = new byte[bufferSize];
@@ -45,7 +45,7 @@ public class DigitalSoundGenerator {
         double hz=frequency/this.sampleRate;
         for(int i = 0; i < buffer.length; i++) {
             //t[i]=Math.sin(i*2*Math.PI*hz);
-            t[i] = amplitude * Math.sin(i * 2 * Math.PI * hz);
+            t[i] = Math.sin(i * 2 * Math.PI * hz);
             Log.d("t[i]",String.valueOf(t[i]));
             if(t[i] > max) {
                 max = t[i];

@@ -41,8 +41,6 @@ public class MainActivity extends Activity implements OnCheckedChangeListener {
         sendingFreqText.setText(R.string.sendingFreqText);
         TextView volumeText = findViewById(R.id.volumeText);
         volumeText.setText(R.string.volumeText);
-        TextView amplitudeText = findViewById(R.id.amplitudeText);
-        amplitudeText.setText(R.string.amplitudeText);
         Switch sendingSwitch = findViewById(R.id.Switch);
         sendingSwitch.setOnCheckedChangeListener(this);
     }
@@ -54,11 +52,9 @@ public class MainActivity extends Activity implements OnCheckedChangeListener {
 
             EditText sendingFreqEdit = findViewById(R.id.sendingFreqEdit);
             EditText volumeEdit = findViewById(R.id.volumeEdit);
-            EditText amplitudeEdit = findViewById(R.id.amplitudeEdit);
 
             final int SENDING_FREQ = Integer.parseInt(sendingFreqEdit.getText().toString());
             final int SENDING_VOLUME = Integer.parseInt(volumeEdit.getText().toString());
-            final int AMPLITUDE = Integer.parseInt(amplitudeEdit.getText().toString());
 
             audioManager = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
 
@@ -68,7 +64,7 @@ public class MainActivity extends Activity implements OnCheckedChangeListener {
             // 再生用AudioTrackは、同じサンプルレートで初期化したものを利用する
             audioTrack = soundGenerator.getAudioTrack();
 
-            soundList.add(new SoundDto(generateSound(soundGenerator, SENDING_FREQ, AMPLITUDE)));
+            soundList.add(new SoundDto(generateSound(soundGenerator, SENDING_FREQ)));
 
             DEFAULT_VOLUME = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
             audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, SENDING_VOLUME, 0);
@@ -136,7 +132,7 @@ public class MainActivity extends Activity implements OnCheckedChangeListener {
      * @param freq 周波数(音階)
      * @return 音データ
      */
-    public byte[] generateSound(DigitalSoundGenerator gen, double freq, double amp) {
-        return gen.getSound(freq, amp);
+    public byte[] generateSound(DigitalSoundGenerator gen, double freq) {
+        return gen.getSound(freq);
     }
 }
