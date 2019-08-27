@@ -44,7 +44,6 @@ public class DigitalSoundGenerator {
         double[] t = new double[buffer.length];
         double hz=frequency/this.sampleRate;
         for(int i = 0; i < buffer.length; i++) {
-            //t[i]=Math.sin(i*2*Math.PI*hz);
             t[i] = Math.sin(i * 2 * Math.PI * hz);
             Log.d("t[i]",String.valueOf(t[i]));
             if(t[i] > max) {
