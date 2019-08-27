@@ -3,7 +3,7 @@ package com.example.taichiabe.sinusoidsender;
 public class SoundDto {
 
     // 音声データ
-    private byte[] sound;
+    private short[] sound;
     // 長さ
     private double length;
 
@@ -12,19 +12,19 @@ public class SoundDto {
      * @param source 音声データ
      * @param length 長さ
      */
-    public SoundDto(byte[] source, double length) {
+    public SoundDto(short[] source, double length) {
         this.sound = source;
         this.length = length;
     }
 
-    public SoundDto(byte[] source) {
+    public SoundDto(short[] source) {
         this.sound = source;
     }
 
-    public byte[] getSound() {
+    public short[] getSound() {
         return sound;
     }
-    public void setSound(byte[] sound) {
+    public void setSound(short[] sound) {
         this.sound = sound;
     }
     public double getLength() {

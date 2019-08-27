@@ -32,30 +32,33 @@ public class DigitalSoundGenerator {
     }
 
     /**
-     * サウンド生成
-     * @param frequency 鳴らしたい音の周波数
+     * 正弦波生成
+     * @param frequency 送信周波数
      * @return 音声データ
      */
-    public byte[] getSound(double frequency) {
-        frequency = frequency / 2;
-        // byteバッファを作成
-        byte[] buffer = new byte[bufferSize];
-        double max = 0;
-        double[] t = new double[buffer.length];
-        double hz=frequency/this.sampleRate;
-        for(int i = 0; i < buffer.length; i++) {
-            t[i] = Math.sin(i * 2 * Math.PI * hz);
-            Log.d("t[i]",String.valueOf(t[i]));
-            if(t[i] > max) {
-                max = t[i];
+    public short[] getSoundShort(double frequency) {
+        //frequency = frequency / 2;
+        double[] value = new double[sampleRate];
+        double max = 0.0;
+        for(int i = 0; i < sampleRate; i++) {
+            value[i] = Math.sin(2.0 * Math.PI * frequency * i / sampleRate);
+            if(value[i] > max) {
+                max = value[i];
             }
         }
-        double trans = 127 / max;
-        for(int i = 0; i < buffer.length; i++) {
-            buffer[i] = (byte)Math.round(t[i]*trans);
+        short[] buffer = toShort(value, max);
 
-        }
         return buffer;
+    }
+
+    //double型をshort型に変換 (max = 32767 で正規化)
+    public short[] toShort(double[] val, double max) {
+        double trans = 32767 / max;
+        short[] buf = new short[sampleRate];
+        for(int i = 0; i < sampleRate; i++) {
+            buf[i] = (short)Math.round(val[i] * trans);
+        }
+        return buf;
     }
 
     public AudioTrack getAudioTrack() {

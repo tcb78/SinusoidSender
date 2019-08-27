@@ -124,15 +124,13 @@ public class MainActivity extends Activity implements OnCheckedChangeListener {
         super.onResume();
     }
 
-
-
     /**
      * ８ビットのピコピコ音を生成する.
      * @param gen Generator
      * @param freq 周波数(音階)
      * @return 音データ
      */
-    public byte[] generateSound(DigitalSoundGenerator gen, double freq) {
-        return gen.getSound(freq);
+    public short[] generateSound(DigitalSoundGenerator gen, double freq) {
+        return gen.getSoundShort(freq);
     }
 }
